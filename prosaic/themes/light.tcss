@@ -1,0 +1,556 @@
+/* Prosaic Light Theme */
+
+$primary: #703327;
+$primary-muted: #8a4d3f;
+$secondary: #715e12;
+$background: #fffffc;
+$surface: #f8f8f5;
+$panel: #f0f0eb;
+$text: #5a3d35;
+$text-muted: #8a6d60;
+$text-dim: #a89080;
+$border: #c8c8c4;
+$border-focus: #703327;
+$accent: #ffffed;
+$error: #c24038;
+$success: #5a7a32;
+$warning: #b8860b;
+
+Screen {
+    background: $background;
+}
+
+* {
+    scrollbar-color: $text-dim;
+    scrollbar-color-hover: $text-muted;
+    scrollbar-color-active: $primary;
+    scrollbar-background: transparent;
+    scrollbar-background-hover: $panel;
+    scrollbar-background-active: $panel;
+    background-tint: transparent !important;
+}
+
+*:focus {
+    background-tint: transparent !important;
+}
+
+*:focus-within {
+    background-tint: transparent !important;
+}
+
+Tree > .tree--cursor {
+    background: $accent !important;
+    color: $text !important;
+}
+
+Tree:focus > .tree--cursor {
+    background: $accent !important;
+    color: $text !important;
+}
+
+Tree > .tree--highlight {
+    background: $accent !important;
+    color: $text !important;
+}
+
+Tree:focus > .tree--highlight {
+    background: $accent !important;
+    color: $text !important;
+}
+
+DirectoryTree > .directory-tree--cursor {
+    background: $accent !important;
+    color: $text !important;
+}
+
+DirectoryTree:focus > .directory-tree--cursor {
+    background: $accent !important;
+    color: $text !important;
+}
+
+DirectoryTree > .tree--cursor {
+    background: $accent !important;
+    color: $text !important;
+}
+
+DirectoryTree:focus > .tree--cursor {
+    background: $accent !important;
+    color: $text !important;
+}
+
+Tree > .tree--guides {
+    color: $border !important;
+}
+
+Tree > .tree--guides-selected {
+    color: $primary-muted !important;
+}
+
+Tree > .tree--guides-hover {
+    color: $text-muted !important;
+}
+
+DirectoryTree > .tree--guides {
+    color: $border !important;
+}
+
+DirectoryTree > .tree--guides-selected {
+    color: $primary-muted !important;
+}
+
+DirectoryTree > .tree--guides-hover {
+    color: $text-muted !important;
+}
+
+ListView > ListItem.-highlight {
+    background: $accent !important;
+}
+
+ListView:focus > ListItem.-highlight {
+    background: $accent !important;
+}
+
+ListItem.-highlight {
+    background: $accent !important;
+}
+
+OptionList > .option-list--option-highlighted {
+    background: $accent !important;
+    color: $text !important;
+}
+
+OptionList:focus > .option-list--option-highlighted {
+    background: $accent !important;
+    color: $text !important;
+}
+
+.text-link {
+    color: $primary !important;
+}
+
+.text-link:hover {
+    color: $primary-muted !important;
+}
+
+Input:focus {
+    border: solid $border-focus !important;
+}
+
+#dashboard-container {
+    width: 100%;
+    height: 100%;
+    align: center middle;
+}
+
+#dashboard {
+    width: 60;
+    height: 24;
+    padding: 1 2;
+    background: $surface;
+    border: round $border;
+}
+
+#dashboard-title {
+    text-align: center;
+    text-style: bold;
+    color: $primary;
+}
+
+#dashboard-menu {
+    padding: 1 0 0 0;
+}
+
+.menu-item {
+    height: 1;
+    width: 100%;
+    padding: 0 1;
+    margin: 0;
+    background: transparent;
+}
+
+.menu-label {
+    width: 1fr;
+    color: $text;
+}
+
+.menu-key {
+    width: auto;
+    color: $text-muted;
+}
+
+.menu-item:hover {
+    background: $panel;
+}
+
+.menu-item:hover .menu-label {
+    color: $primary;
+}
+
+.menu-item:focus {
+    background: $accent;
+}
+
+.menu-item:focus .menu-label {
+    color: $primary;
+}
+
+#dashboard-stats {
+    padding: 1 0 0 0;
+    text-align: center;
+    color: $text-muted;
+}
+
+#dashboard-footer {
+    padding: 1 0 0 0;
+    text-align: center;
+    color: $text-dim;
+}
+
+#dashboard-quote {
+    padding: 1 0 0 0;
+    text-align: center;
+    color: $text-muted;
+}
+
+#dashboard-quote-attr {
+    padding: 1 0 0 0;
+    text-align: center;
+    color: $primary;
+    text-style: italic;
+}
+
+#editor-layout {
+    width: 100%;
+    height: 1fr;
+    padding: 1 1 0 1;
+}
+
+#file-tree {
+    width: 30;
+    height: 100%;
+    background: $surface;
+    border: round $border;
+    margin-right: 1;
+}
+
+#tree-title {
+    height: 2;
+    padding: 0 2;
+    color: $text-muted;
+    text-style: bold;
+    border-bottom: solid $border;
+}
+
+#file-tree:focus-within {
+    border: solid $primary;
+}
+
+#file-tree DirectoryTree {
+    padding: 0 1;
+    background: $surface;
+    scrollbar-size: 1 1;
+}
+
+#file-tree DirectoryTree:focus {
+    background: $surface;
+    background-tint: transparent !important;
+}
+
+#file-tree DirectoryTree > .directory-tree--cursor {
+    background: $accent;
+    color: $text;
+}
+
+#file-tree DirectoryTree > .directory-tree--selected {
+    color: $primary;
+    text-style: bold;
+}
+
+#editor-container {
+    width: 1fr;
+    height: 100%;
+    background: $background;
+    background-tint: transparent !important;
+    border: round $border;
+}
+
+#editor-container:focus-within {
+    border: solid $primary;
+}
+
+#editor {
+    width: 100%;
+    height: 1fr;
+    padding: 1 2;
+    background: $background;
+    background-tint: transparent !important;
+    scrollbar-size: 1 1;
+}
+
+TextArea {
+    color: $text;
+    background: $background;
+    border: none;
+    padding: 0;
+}
+
+TextArea:focus {
+    color: $text;
+    background: $background;
+    background-tint: transparent !important;
+    border: none;
+}
+
+TextArea > .text-area--cursor {
+    background: $primary;
+    color: $background;
+}
+
+TextArea > .text-area--selection {
+    color: $text;
+    background: $accent;
+}
+
+TextArea > .text-area--cursor-line {
+    background: transparent;
+}
+
+TextArea > .text-area--gutter {
+    background: $background;
+    color: $text-muted;
+}
+
+TextArea > .text-area--cursor-gutter {
+    background: $background;
+    color: $text;
+}
+
+#outline {
+    width: 26;
+    height: 100%;
+    background: $surface;
+    border: round $border;
+    margin-left: 1;
+}
+
+#outline-title {
+    height: 2;
+    padding: 0 2;
+    color: $text-muted;
+    text-style: bold;
+    border-bottom: solid $border;
+}
+
+#outline:focus-within {
+    border: solid $primary;
+}
+
+#outline-list {
+    padding: 1;
+    background: $surface;
+    scrollbar-size: 1 1;
+}
+
+#outline-list:focus {
+    background: $surface;
+    background-tint: transparent !important;
+}
+
+.outline-item {
+    padding: 0 1;
+    height: 2;
+}
+
+.outline-item:hover {
+    background: $accent;
+}
+
+.outline-item--h1 {
+    color: $primary;
+    text-style: bold;
+}
+
+.outline-item--h2 {
+    color: $primary-muted;
+    padding-left: 2;
+}
+
+.outline-item--h3 {
+    color: $text;
+    padding-left: 4;
+}
+
+#outline-list > ListItem.-highlight {
+    background: $accent !important;
+    color: $text !important;
+}
+
+#outline-list:focus > ListItem.-highlight {
+    background: $accent !important;
+    color: $text !important;
+}
+
+#statusbar {
+    height: 1;
+    dock: bottom;
+    background: transparent;
+    padding: 0 2;
+    margin: 0 1 1 1;
+}
+
+#statusbar > #filename {
+    color: $text;
+    width: auto;
+}
+
+#statusbar > #modified {
+    color: $warning;
+    width: auto;
+}
+
+#statusbar > #git {
+    color: $secondary;
+    width: auto;
+}
+
+.spacer {
+    width: 1fr;
+}
+
+.sep {
+    color: $text-muted;
+    margin: 0 1;
+    width: auto;
+}
+
+#word-count, #char-count {
+    color: $text-muted;
+    width: auto;
+}
+
+ModalScreen {
+    align: center middle;
+    background: rgba(74, 74, 74, 0.5);
+}
+
+#dialog {
+    width: 60;
+    height: auto;
+    padding: 2 3;
+    background: $surface;
+    border: round $border;
+}
+
+#dialog-title {
+    color: $primary;
+    text-style: bold;
+    padding-bottom: 1;
+    border-bottom: solid $border;
+    margin-bottom: 1;
+}
+
+Input {
+    margin: 1 0;
+    background: $background;
+    border: solid $border;
+    padding: 0 1;
+    height: 3;
+}
+
+Input:focus {
+    border: solid $border-focus;
+}
+
+#dialog-buttons {
+    margin-top: 2;
+    align: right middle;
+}
+
+Button {
+    margin-left: 1;
+    min-width: 12;
+    background: $panel;
+    border: solid $border;
+    color: $text;
+    height: 3;
+}
+
+Button:hover {
+    background: $accent;
+    border: solid $primary-muted;
+}
+
+Button.-primary {
+    background: $primary;
+    border: solid $primary;
+    color: $background;
+}
+
+Button.-primary:hover {
+    background: $primary-muted;
+}
+
+#help-dialog {
+    width: 65;
+    height: auto;
+    padding: 2 3;
+    background: $surface;
+    border: round $border;
+}
+
+#help-dialog Static {
+    color: $primary;
+}
+
+#find-dialog {
+    width: 60;
+    height: auto;
+    max-height: 34;
+    padding: 2 3;
+    background: $surface;
+    border: round $border;
+}
+
+#find-input {
+    margin-bottom: 1;
+}
+
+#find-list {
+    height: auto;
+    max-height: 16;
+    background: $surface;
+    border: solid $border;
+    padding: 0;
+}
+
+.focus-mode #file-tree {
+    display: none;
+}
+
+.focus-mode #outline {
+    display: none;
+}
+
+.focus-mode #statusbar {
+    display: none;
+}
+
+.focus-mode #editor {
+    padding: 2 12;
+}
+
+.reader-mode #file-tree {
+    display: none;
+}
+
+.reader-mode #outline {
+    display: none;
+}
+
+.reader-mode #statusbar {
+    display: none;
+}
+
+.reader-mode #editor {
+    padding: 2 20;
+}

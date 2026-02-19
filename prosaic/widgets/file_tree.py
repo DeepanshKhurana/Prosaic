@@ -1,0 +1,55 @@
+"""File tree widget for workspace navigation."""
+
+from collections.abc import Iterable
+from pathlib import Path
+
+from rich.text import Text
+from textual.containers import Vertical
+from textual.message import Message
+from textual.widgets import DirectoryTree, Static
+
+
+class FilteredDirectoryTree(DirectoryTree):
+    """Directory tree with emoji-free labels and hidden-file filtering."""
+
+    HIDDEN_FILES = {".git", ".DS_Store", "metrics.json", "__pycache__"}
+
+    def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
+        return [
+            path
+            for path in paths
+            if path.name not in self.HIDDEN_FILES and not path.name.startswith(".")
+        ]
+
+    def render_label(self, node, base_style, style):
+        label = (
+            node._label.plain if hasattr(node._label, "plain") else str(node._label)
+        )
+        if node._allow_expand:
+            prefix = "▾ " if node.is_expanded else "▸ "
+        else:
+            prefix = "  "
+        return Text.assemble((prefix, base_style), (label, style))
+
+
+class FileTree(Vertical):
+    """File tree panel for the workspace."""
+
+    class FileSelected(Message):
+        def __init__(self, path: Path) -> None:
+            self.path = path
+            super().__init__()
+
+    def __init__(self, root: Path, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.root = root
+
+    def compose(self):
+        yield Static("files", id="tree-title", classes="panel-title")
+        yield FilteredDirectoryTree(self.root, id="directory-tree")
+
+    def on_directory_tree_file_selected(
+        self,
+        event: DirectoryTree.FileSelected,
+    ) -> None:
+        self.post_message(self.FileSelected(event.path))
