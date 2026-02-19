@@ -1,0 +1,144 @@
+"""Dashboard screen."""
+
+from pathlib import Path
+
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import Container, Horizontal, Vertical
+from textual.screen import Screen
+from textual.widgets import Static
+
+from prosaic.core.metrics import MetricsTracker
+
+QUOTE = (
+    "in these random impressions, and with no desire to be other than random, "
+    "i indifferently narrate my fact-less autobiography, my lifeless history. "
+    "these are my confessions, and if in them i say nothing, "
+    "it's because i have nothing to say."
+)
+QUOTE_ATTR = "fernando pessoa, the book of disquiet"
+
+
+class DashboardScreen(Screen):
+    """Home screen with menu and daily stats."""
+
+    BINDINGS = [
+        Binding("p", "new_piece", "write a piece"),
+        Binding("b", "new_book", "work on a book"),
+        Binding("n", "add_note", "add a note"),
+        Binding("r", "read_notes", "read notes"),
+        Binding("f", "find_piece", "find files"),
+        Binding("q", "quit", "quit"),
+        Binding("?", "show_help", "help"),
+        Binding("escape", "quit", "quit", show=False),
+    ]
+
+    def __init__(self, metrics: MetricsTracker, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.metrics = metrics
+
+    def compose(self) -> ComposeResult:
+        with Container(id="dashboard-container"):
+            with Vertical(id="dashboard"):
+                yield Static("prosaic", id="dashboard-title")
+
+                with Vertical(id="dashboard-menu"):
+                    with Horizontal(classes="menu-item"):
+                        yield Static("write a piece", classes="menu-label")
+                        yield Static("(p)", classes="menu-key")
+                    with Horizontal(classes="menu-item"):
+                        yield Static("work on a book", classes="menu-label")
+                        yield Static("(b)", classes="menu-key")
+                    with Horizontal(classes="menu-item"):
+                        yield Static("add a note", classes="menu-label")
+                        yield Static("(n)", classes="menu-key")
+                    with Horizontal(classes="menu-item"):
+                        yield Static("read notes", classes="menu-label")
+                        yield Static("(r)", classes="menu-key")
+                    with Horizontal(classes="menu-item"):
+                        yield Static("find files", classes="menu-label")
+                        yield Static("(f)", classes="menu-key")
+
+                stats = self.metrics.get_today_stats()
+                yield Static(
+                    f"{stats['words']:,} words",
+                    id="dashboard-stats",
+                )
+
+                yield Static("", id="dashboard-separator")
+                yield Static(QUOTE, id="dashboard-quote")
+                yield Static(QUOTE_ATTR, id="dashboard-quote-attr")
+                yield Static("help (?)   quit (q)", id="dashboard-footer")
+
+    def on_screen_resume(self) -> None:
+        """Refresh stats when returning to dashboard."""
+        stats = self.metrics.get_today_stats()
+        stats_widget = self.query_one("#dashboard-stats", Static)
+        stats_widget.update(f"{stats['words']:,} words")
+
+    def action_new_piece(self) -> None:
+        from prosaic.app import NewPieceModal
+
+        def handle_result(result: Path | None) -> None:
+            if result:
+                self.app._open_editor(result)
+
+        self.app.push_screen(NewPieceModal(), callback=handle_result)
+
+    def action_new_book(self) -> None:
+        from prosaic.app import NewBookModal
+
+        def handle_result(result: Path | None) -> None:
+            if result:
+                self.app._open_editor(result)
+
+        self.app.push_screen(NewBookModal(), callback=handle_result)
+
+    def action_add_note(self) -> None:
+        from prosaic.screens import EditorScreen
+
+        self.app.push_screen(
+            EditorScreen(
+                self.metrics,
+                initial_file=self.app.notes_path,
+                light_mode=self.app.light_mode,
+                add_note=True,
+            )
+        )
+
+    def action_read_notes(self) -> None:
+        from prosaic.screens import EditorScreen
+
+        self.app.push_screen(
+            EditorScreen(
+                self.metrics,
+                initial_file=self.app.notes_path,
+                light_mode=self.app.light_mode,
+                reader_mode_initial=True,
+            )
+        )
+
+    def action_find_piece(self) -> None:
+        from prosaic.app import FileFindModal
+
+        self.app.push_screen(FileFindModal(), callback=self._handle_find_result)
+
+    def _handle_find_result(self, result: Path | None) -> None:
+        if result:
+            from prosaic.screens import EditorScreen
+
+            self.app.push_screen(
+                EditorScreen(
+                    self.metrics,
+                    initial_file=result,
+                    light_mode=self.app.light_mode,
+                )
+            )
+
+    def action_show_help(self) -> None:
+        from prosaic.app import HelpScreen
+
+        self.app.push_screen(HelpScreen())
+
+    def action_quit(self) -> None:
+        self.app.exit()

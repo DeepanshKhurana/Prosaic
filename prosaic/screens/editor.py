@@ -1,0 +1,242 @@
+"""Editor screen."""
+
+from datetime import datetime
+from pathlib import Path
+
+from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
+from textual.reactive import reactive
+from textual.screen import Screen
+from textual.widgets import Static, TextArea
+
+from prosaic.config import get_books_dir, get_workspace_dir
+from prosaic.core import count_characters, count_words
+from prosaic.core.metrics import MetricsTracker
+from prosaic.widgets import FileTree, OutlinePanel, SpellCheckTextArea, StatusBar
+
+
+class EditorScreen(Screen):
+    """Main writing screen with editor, file tree, and outline."""
+
+    BINDINGS = [
+        Binding("ctrl+e", "toggle_tree", "tree", priority=True),
+        Binding("ctrl+s", "save", "save", priority=True),
+        Binding("ctrl+o", "toggle_outline", "outline"),
+        Binding("f5", "toggle_focus", "focus mode"),
+        Binding("f6", "toggle_reader", "reader mode"),
+        Binding("?", "show_help", "help", show=False),
+    ]
+
+    show_tree: reactive[bool] = reactive(True)
+    show_outline: reactive[bool] = reactive(False)
+    focus_mode: reactive[bool] = reactive(False)
+    reader_mode: reactive[bool] = reactive(False)
+    current_file: reactive[Path | None] = reactive(None)
+    modified: reactive[bool] = reactive(False)
+
+    def __init__(
+        self,
+        metrics: MetricsTracker,
+        initial_file: Path | None = None,
+        light_mode: bool = True,
+        add_note: bool = False,
+        reader_mode_initial: bool = False,
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.metrics = metrics
+        self._initial_file = initial_file
+        self._light_mode = light_mode
+        self._add_note = add_note
+        self._reader_mode_initial = reader_mode_initial
+        self._is_book = False
+
+    def compose(self) -> ComposeResult:
+        ta_theme = "prosaic_light" if self._light_mode else "prosaic_dark"
+        with Horizontal(id="editor-layout"):
+            yield FileTree(get_workspace_dir(), id="file-tree")
+            with Vertical(id="editor-container"):
+                yield SpellCheckTextArea(
+                    id="editor",
+                    language="markdown",
+                    soft_wrap=True,
+                    theme=ta_theme,
+                )
+            yield OutlinePanel(id="outline")
+        yield StatusBar(id="statusbar")
+
+    def on_mount(self) -> None:
+        editor = self.query_one("#editor", TextArea)
+        editor.focus()
+
+        if self._initial_file and self._initial_file.exists():
+            self._load_file(self._initial_file)
+            books_dir = get_books_dir()
+            try:
+                self._initial_file.relative_to(books_dir)
+                self._is_book = True
+            except ValueError:
+                self._is_book = False
+            self.show_outline = self._is_book
+            self.query_one("#outline", OutlinePanel).display = self._is_book
+
+        if self._reader_mode_initial:
+            self.reader_mode = True
+
+    def _load_file(self, path: Path) -> None:
+        if not path.exists():
+            return
+
+        content = path.read_text()
+
+        if self._add_note:
+            heading = datetime.now().strftime("## %Y-%m-%d %H:%M")
+            if content and not content.endswith("\n"):
+                content += "\n"
+            content += f"\n{heading}\n\n"
+            path.write_text(content)
+
+        editor = self.query_one("#editor", TextArea)
+        editor.load_text(content)
+
+        if self._add_note:
+            lines = content.split("\n")
+            editor.move_cursor((len(lines) - 1, 0))
+
+        self.current_file = path
+        self.modified = False
+
+        outline = self.query_one("#outline", OutlinePanel)
+        outline.update_headings(content)
+
+        statusbar = self.query_one("#statusbar", StatusBar)
+        statusbar.filename = path.name
+        statusbar.modified = False
+        statusbar.update_git_for_file(path)
+
+        self._update_stats(content)
+        self.metrics.set_baseline(count_words(content))
+
+    def _save_file(self, silent: bool = False) -> None:
+        if self.current_file is None:
+            return
+
+        editor = self.query_one("#editor", TextArea)
+        content = editor.text
+        self.current_file.write_text(content)
+        self.modified = False
+        self.metrics.record_save(count_words(content), self.current_file)
+
+        if not silent:
+            self.notify(f"Saved {self.current_file.name}")
+
+    def _update_stats(self, content: str) -> None:
+        words = count_words(content)
+        chars = count_characters(content)
+        try:
+            statusbar = self.query_one("#statusbar", StatusBar)
+            statusbar.words = words
+            statusbar.characters = chars
+        except Exception:
+            pass
+
+    def watch_show_tree(self, show: bool) -> None:
+        self.query_one("#file-tree", FileTree).display = show
+
+    def watch_show_outline(self, show: bool) -> None:
+        self.query_one("#outline", OutlinePanel).display = show
+
+    def watch_focus_mode(self, focus: bool) -> None:
+        if focus:
+            self.add_class("focus-mode")
+            self.show_tree = False
+            self.show_outline = False
+        else:
+            self.remove_class("focus-mode")
+            self.show_tree = True
+            self.show_outline = self._is_book
+
+    def watch_reader_mode(self, reader: bool) -> None:
+        editor = self.query_one("#editor", TextArea)
+        if reader:
+            self.add_class("reader-mode")
+            self.show_tree = False
+            self.show_outline = False
+            editor.read_only = True
+        else:
+            self.remove_class("reader-mode")
+            self.show_tree = True
+            self.show_outline = self._is_book
+            editor.read_only = False
+
+    def watch_current_file(self, path: Path | None) -> None:
+        try:
+            statusbar = self.query_one("#statusbar", StatusBar)
+            statusbar.filename = path.name if path else "untitled"
+        except Exception:
+            pass
+
+    def watch_modified(self, modified: bool) -> None:
+        try:
+            statusbar = self.query_one("#statusbar", StatusBar)
+            statusbar.modified = modified
+        except Exception:
+            pass
+
+    def on_text_area_changed(self, event: TextArea.Changed) -> None:
+        self.modified = True
+        content = event.text_area.text
+        self.query_one("#outline", OutlinePanel).update_headings(content)
+        self._update_stats(content)
+
+    def on_file_tree_file_selected(self, event: FileTree.FileSelected) -> None:
+        if event.path.suffix == ".md":
+            if self.modified:
+                self._save_file(silent=True)
+            self._load_file(event.path)
+
+    def on_outline_panel_heading_selected(
+        self,
+        event: OutlinePanel.HeadingSelected,
+    ) -> None:
+        editor = self.query_one("#editor", TextArea)
+        editor.move_cursor((event.line - 1, 0))
+        editor.focus()
+
+    def action_toggle_tree(self) -> None:
+        self.show_tree = not self.show_tree
+
+    def action_toggle_outline(self) -> None:
+        self.show_outline = not self.show_outline
+
+    def action_toggle_focus(self) -> None:
+        self.reader_mode = False
+        self.focus_mode = not self.focus_mode
+        self.notify("Focus mode on" if self.focus_mode else "Focus mode off")
+
+    def action_toggle_reader(self) -> None:
+        self.focus_mode = False
+        self.reader_mode = not self.reader_mode
+        self.notify("Reader mode on" if self.reader_mode else "Reader mode off")
+
+    def action_save(self) -> None:
+        self._save_file()
+
+    def action_go_home(self) -> None:
+        if self.modified:
+            self._save_file(silent=True)
+        self.app.pop_screen()
+
+    def on_unmount(self) -> None:
+        if self.modified and self.current_file:
+            try:
+                editor = self.query_one("#editor", TextArea)
+                self.current_file.write_text(editor.text)
+            except Exception:
+                pass
+
+    def action_show_help(self) -> None:
+        from prosaic.app import HelpScreen
+
+        self.app.push_screen(HelpScreen())
