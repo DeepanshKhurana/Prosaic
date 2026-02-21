@@ -6,9 +6,19 @@ import click
 from textual.app import App
 from textual.binding import Binding
 
-from prosaic.config import ensure_workspace, get_notes_path
+from prosaic.app import HelpScreen, NewBookModal, NewPieceModal
+from prosaic.config import (
+    ensure_workspace,
+    get_notes_path,
+    get_workspace_dir,
+    save_config,
+    set_last_file,
+)
 from prosaic.core.metrics import MetricsTracker
-from prosaic.themes import PROSAIC_LIGHT_CSS, PROSAIC_DARK_CSS
+from prosaic.screens import DashboardScreen, EditorScreen
+from prosaic.themes import PROSAIC_DARK_CSS, PROSAIC_LIGHT_CSS
+from prosaic.widgets import SpellCheckTextArea
+from prosaic.wizard import needs_setup, run_setup, setup_workspace
 
 
 class ProsaicApp(App):
@@ -34,12 +44,7 @@ class ProsaicApp(App):
 
     def on_mount(self) -> None:
         ensure_workspace()
-        from prosaic.config import get_workspace_dir
-
         self.metrics = MetricsTracker(get_workspace_dir())
-
-        from prosaic.screens import DashboardScreen
-
         self.install_screen(DashboardScreen(self.metrics), name="dashboard")
 
         if self.initial_file:
@@ -48,7 +53,8 @@ class ProsaicApp(App):
             self.push_screen("dashboard")
 
     def _open_editor(self, file_path: Path | None = None) -> None:
-        from prosaic.screens import EditorScreen
+        if file_path:
+            set_last_file(file_path)
 
         self.push_screen(
             EditorScreen(
@@ -59,8 +65,6 @@ class ProsaicApp(App):
         )
 
     def _open_notes(self) -> None:
-        from prosaic.screens import EditorScreen
-
         self.push_screen(
             EditorScreen(
                 self.metrics,
@@ -71,8 +75,6 @@ class ProsaicApp(App):
         )
 
     def _open_notes_readonly(self) -> None:
-        from prosaic.screens import EditorScreen
-
         self.push_screen(
             EditorScreen(
                 self.metrics,
@@ -91,22 +93,15 @@ class ProsaicApp(App):
             self._open_editor(result)
 
     def action_new_piece(self) -> None:
-        from prosaic.app import NewPieceModal
-
         self.push_screen(NewPieceModal(), callback=self._handle_new_piece)
 
     def action_new_book(self) -> None:
-        from prosaic.app import NewBookModal
-
         self.push_screen(NewBookModal(), callback=self._handle_new_book)
 
     def toggle_theme(self) -> None:
         self.light_mode = not self.light_mode
         ProsaicApp.CSS = PROSAIC_LIGHT_CSS if self.light_mode else PROSAIC_DARK_CSS
         self.refresh_css(animate=False)
-
-        from prosaic.screens import EditorScreen
-        from prosaic.widgets import SpellCheckTextArea
 
         try:
             screen = self.screen
@@ -121,8 +116,6 @@ class ProsaicApp(App):
         self.exit()
 
     def action_smart_quit(self) -> None:
-        from prosaic.screens import DashboardScreen, EditorScreen
-
         screen = self.screen
         if isinstance(screen, EditorScreen):
             screen.action_go_home()
@@ -140,9 +133,6 @@ class ProsaicApp(App):
 @click.argument("file", required=False, type=click.Path())
 def main(light: bool, setup: bool, file: str | None) -> None:
     """Prosaic - A writer-first terminal writing app."""
-    from prosaic.config import save_config
-    from prosaic.wizard import needs_setup, run_setup, setup_workspace
-
     if setup or needs_setup():
         config = run_setup()
         save_config(config)

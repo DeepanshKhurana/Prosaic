@@ -42,6 +42,7 @@ prosaic --setup
 - **Markdown-first**: Live outline, word counting
 - **Focus mode**: Hide everything except your writing
 - **Reader mode**: Distraction-free reading
+- **Continue writing**: Resume your last edited document
 - **Daily metrics**: Track words and characters written each day
 - **Git-ready**: Archive is Git-initialized for versioning
 
@@ -49,6 +50,7 @@ prosaic --setup
 
 | Category | Key | Action |
 |----------|-----|--------|
+| Dashboard | `c` | Continue writing (if last file exists) |
 | Dashboard | `p` | Write a piece |
 | Dashboard | `b` | Work on a book |
 | Dashboard | `n` | Add a note |
@@ -113,7 +115,8 @@ Example `settings.json`:
   "archive_dir": "/Users/you/Prosaic",
   "init_git": true,
   "git_remote": "git@github.com:you/writing.git",
-  "git_inherited": true
+  "git_inherited": true,
+  "last_file": "/Users/you/Prosaic/pieces/2026-02-21-example.md"
 }
 ```
 

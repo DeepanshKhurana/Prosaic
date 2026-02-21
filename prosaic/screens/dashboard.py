@@ -8,7 +8,10 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Static
 
+from prosaic.app import FileFindModal, HelpScreen, NewBookModal, NewPieceModal
+from prosaic.config import get_last_file, set_last_file
 from prosaic.core.metrics import MetricsTracker
+from prosaic.screens.editor import EditorScreen
 
 QUOTE = (
     "in these random impressions, and with no desire to be other than random, "
@@ -23,6 +26,7 @@ class DashboardScreen(Screen):
     """Home screen with menu and daily stats."""
 
     BINDINGS = [
+        Binding("c", "continue_writing", "continue writing", show=False),
         Binding("p", "new_piece", "write a piece"),
         Binding("b", "new_book", "work on a book"),
         Binding("n", "add_note", "add a note"),
@@ -36,6 +40,7 @@ class DashboardScreen(Screen):
     def __init__(self, metrics: MetricsTracker, **kwargs) -> None:
         super().__init__(**kwargs)
         self.metrics = metrics
+        self.last_file = get_last_file()
 
     def compose(self) -> ComposeResult:
         with Container(id="dashboard-container"):
@@ -43,6 +48,12 @@ class DashboardScreen(Screen):
                 yield Static("prosaic", id="dashboard-title")
 
                 with Vertical(id="dashboard-menu"):
+                    with Horizontal(classes="menu-item", id="continue-item"):
+                        yield Static(
+                            "continue writing",
+                            classes="menu-label",
+                        )
+                        yield Static("(c)", classes="menu-key")
                     with Horizontal(classes="menu-item"):
                         yield Static("write a piece", classes="menu-label")
                         yield Static("(p)", classes="menu-key")
@@ -70,15 +81,22 @@ class DashboardScreen(Screen):
                 yield Static(QUOTE_ATTR, id="dashboard-quote-attr")
                 yield Static("help (?)   quit (q)", id="dashboard-footer")
 
+    def on_mount(self) -> None:
+        """Hide continue item if no last file."""
+        if not self.last_file:
+            self.query_one("#continue-item").display = False
+
     def on_screen_resume(self) -> None:
-        """Refresh stats when returning to dashboard."""
+        """Refresh stats and continue item when returning to dashboard."""
         stats = self.metrics.get_today_stats()
         stats_widget = self.query_one("#dashboard-stats", Static)
         stats_widget.update(f"{stats['words']:,} words")
 
-    def action_new_piece(self) -> None:
-        from prosaic.app import NewPieceModal
+        self.last_file = get_last_file()
+        continue_item = self.query_one("#continue-item")
+        continue_item.display = self.last_file is not None
 
+    def action_new_piece(self) -> None:
         def handle_result(result: Path | None) -> None:
             if result:
                 self.app._open_editor(result)
@@ -86,17 +104,17 @@ class DashboardScreen(Screen):
         self.app.push_screen(NewPieceModal(), callback=handle_result)
 
     def action_new_book(self) -> None:
-        from prosaic.app import NewBookModal
-
         def handle_result(result: Path | None) -> None:
             if result:
                 self.app._open_editor(result)
 
         self.app.push_screen(NewBookModal(), callback=handle_result)
 
-    def action_add_note(self) -> None:
-        from prosaic.screens import EditorScreen
+    def action_continue_writing(self) -> None:
+        if self.last_file and self.last_file.exists():
+            self.app._open_editor(self.last_file)
 
+    def action_add_note(self) -> None:
         self.app.push_screen(
             EditorScreen(
                 self.metrics,
@@ -107,8 +125,6 @@ class DashboardScreen(Screen):
         )
 
     def action_read_notes(self) -> None:
-        from prosaic.screens import EditorScreen
-
         self.app.push_screen(
             EditorScreen(
                 self.metrics,
@@ -119,14 +135,11 @@ class DashboardScreen(Screen):
         )
 
     def action_find_piece(self) -> None:
-        from prosaic.app import FileFindModal
-
         self.app.push_screen(FileFindModal(), callback=self._handle_find_result)
 
     def _handle_find_result(self, result: Path | None) -> None:
         if result:
-            from prosaic.screens import EditorScreen
-
+            set_last_file(result)
             self.app.push_screen(
                 EditorScreen(
                     self.metrics,
@@ -136,8 +149,6 @@ class DashboardScreen(Screen):
             )
 
     def action_show_help(self) -> None:
-        from prosaic.app import HelpScreen
-
         self.app.push_screen(HelpScreen())
 
     def action_quit(self) -> None:

@@ -6,6 +6,11 @@ import click
 
 from prosaic.config import get_config_path, load_config
 
+try:
+    from git import Repo
+except ImportError:
+    Repo = None
+
 
 def needs_setup() -> bool:
     """Check if first-run setup is needed."""
@@ -49,18 +54,19 @@ def run_setup() -> dict:
         click.secho("git repository detected!", fg="cyan")
         init_git = True
 
-        try:
-            from git import Repo
-
-            repo = Repo(archive_path)
-            if repo.remotes:
-                git_remote = repo.remotes.origin.url
-                click.echo(f"  remote: {git_remote}")
-            else:
-                click.echo("  local only (no remote configured)")
-                git_remote = _prompt_git_remote()
-        except Exception:
-            click.echo("  (could not read git details)")
+        if Repo is not None:
+            try:
+                repo = Repo(archive_path)
+                if repo.remotes:
+                    git_remote = repo.remotes.origin.url
+                    click.echo(f"  remote: {git_remote}")
+                else:
+                    click.echo("  local only (no remote configured)")
+                    git_remote = _prompt_git_remote()
+            except Exception:
+                click.echo("  (could not read git details)")
+        else:
+            click.echo("  (git not available)")
     else:
         click.echo()
         init_git = click.confirm(
@@ -111,11 +117,9 @@ def setup_workspace(config: dict) -> None:
     if not metrics.exists():
         metrics.write_text('{"daily": {}, "sessions": []}')
 
-    if config.get("init_git", True):
+    if config.get("init_git", True) and Repo is not None:
         git_dir = archive_dir / ".git"
         try:
-            from git import Repo
-
             if git_dir.exists():
                 repo = Repo(archive_dir)
             else:

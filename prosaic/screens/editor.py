@@ -10,6 +10,7 @@ from textual.reactive import reactive
 from textual.screen import Screen
 from textual.widgets import Static, TextArea
 
+from prosaic.app import HelpScreen
 from prosaic.config import get_books_dir, get_workspace_dir
 from prosaic.core import count_characters, count_words
 from prosaic.core.metrics import MetricsTracker
@@ -237,6 +238,4 @@ class EditorScreen(Screen):
                 pass
 
     def action_show_help(self) -> None:
-        from prosaic.app import HelpScreen
-
         self.app.push_screen(HelpScreen())

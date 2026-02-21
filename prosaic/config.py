@@ -4,6 +4,11 @@ import json
 import os
 from pathlib import Path
 
+try:
+    from git import Repo
+except ImportError:
+    Repo = None
+
 
 def get_config_dir() -> Path:
     """Get the config directory."""
@@ -58,6 +63,26 @@ def get_notes_path() -> Path:
     return get_workspace_dir() / "notes.md"
 
 
+def get_last_file() -> Path | None:
+    """Get the last edited file path."""
+    config = load_config()
+    last_file = config.get("last_file")
+    if last_file:
+        path = Path(last_file)
+        if path.exists() and path != get_notes_path():
+            return path
+    return None
+
+
+def set_last_file(path: Path) -> None:
+    """Set the last edited file path."""
+    if path == get_notes_path():
+        return
+    config = load_config()
+    config["last_file"] = str(path)
+    save_config(config)
+
+
 def ensure_workspace() -> None:
     """Ensure the workspace structure exists."""
     dirs = [
@@ -74,12 +99,10 @@ def ensure_workspace() -> None:
         notes.write_text("# Notes\n\n")
 
     config = load_config()
-    if config.get("init_git", True):
+    if config.get("init_git", True) and Repo is not None:
         workspace = get_workspace_dir()
         if not (workspace / ".git").exists():
             try:
-                from git import Repo
-
                 repo = Repo.init(workspace)
                 remote_url = config.get("git_remote", "")
                 if remote_url:
