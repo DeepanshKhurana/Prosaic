@@ -9,12 +9,13 @@ from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Input, Label, ListItem, ListView, Static
 
-from prosaic.config import get_books_dir, get_pieces_dir
+from prosaic.config import get_books_dir, get_pieces_dir, get_workspace_dir
 
 HELP_TEXT = """
 shortcuts
 
 dashboard
+  s         start writing
   p         write a piece
   b         work on a book
   n         add a note
@@ -95,6 +96,44 @@ slug: {slug_str}
         self.dismiss(None)
 
 
+class StartWritingModal(ModalScreen[Path | None]):
+    """Modal for starting a writing session."""
+
+    BINDINGS = [Binding("escape", "cancel", "cancel")]
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="dialog"):
+            yield Static("start writing", id="dialog-title")
+            yield Static("enter a filename (or leave blank for timestamp):")
+            yield Input(placeholder="my-document", id="title-input")
+
+    def on_mount(self) -> None:
+        self.query_one("#title-input", Input).focus()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        self._create_file()
+
+    def _create_file(self) -> None:
+        title = self.query_one("#title-input", Input).value.strip()
+
+        if title:
+            slug = title.lower().replace(" ", "-")
+            slug = "".join(c for c in slug if c.isalnum() or c == "-")
+            filename = f"{slug}.md"
+        else:
+            filename = datetime.now().strftime("%Y%m%d%H%M%S") + ".md"
+
+        workspace_dir = get_workspace_dir()
+        workspace_dir.mkdir(parents=True, exist_ok=True)
+        file_path = workspace_dir / filename
+
+        file_path.write_text("")
+        self.dismiss(file_path)
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
+
 class NewBookModal(ModalScreen[Path | None]):
     """Modal for creating a new book."""
 
@@ -137,8 +176,34 @@ class NewBookModal(ModalScreen[Path | None]):
 class _FileItem(ListItem):
     """List item carrying a Path reference."""
 
-    def __init__(self, path: Path) -> None:
-        super().__init__(Label(path.stem))
+    def __init__(self, path: Path, workspace: Path) -> None:
+        filename = path.stem
+        
+        # Check if it's the notes file
+        if path.name == "notes.md":
+            file_type = "n"
+        else:
+            try:
+                rel_path = path.relative_to(workspace)
+                parts = rel_path.parts
+                if len(parts) > 1:
+                    folder = parts[0]
+                    if folder == "pieces":
+                        file_type = "p"
+                    elif folder == "books":
+                        file_type = "b"
+                    else:
+                        file_type = "d"
+                else:
+                    file_type = "d"
+            except ValueError:
+                file_type = ""
+        
+        if file_type:
+            display = f"{filename} • {file_type}"
+        else:
+            display = filename
+        super().__init__(Label(display))
         self.path = path
 
 
@@ -152,6 +217,7 @@ class FileFindModal(ModalScreen[Path | None]):
             yield Static("find files", id="dialog-title")
             yield Input(placeholder="type to filter...", id="find-input")
             yield ListView(id="find-list")
+            yield Static("(b)ook • (d)raft • (n)ote • (p)iece", id="find-legend")
 
     def on_mount(self) -> None:
         self.query_one("#find-input", Input).focus()
@@ -161,15 +227,15 @@ class FileFindModal(ModalScreen[Path | None]):
         self._refresh_list(event.value.strip())
 
     def _refresh_list(self, query: str) -> None:
-        pieces_dir = get_pieces_dir()
+        workspace_dir = get_workspace_dir()
         find_list = self.query_one("#find-list", ListView)
         find_list.clear()
 
-        if not pieces_dir.exists():
+        if not workspace_dir.exists():
             return
 
         files = sorted(
-            pieces_dir.glob("*.md"),
+            workspace_dir.rglob("*.md"),
             key=lambda p: p.stat().st_mtime,
             reverse=True,
         )
@@ -177,7 +243,7 @@ class FileFindModal(ModalScreen[Path | None]):
             files = [f for f in files if query.lower() in f.stem.lower()]
 
         for f in files[:20]:
-            find_list.append(_FileItem(f))
+            find_list.append(_FileItem(f, workspace_dir))
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         if isinstance(event.item, _FileItem):
@@ -214,4 +280,4 @@ class HelpScreen(ModalScreen):
         self.dismiss()
 
 
-__all__ = ["FileFindModal", "HelpScreen", "NewBookModal", "NewPieceModal"]
+__all__ = ["FileFindModal", "HelpScreen", "NewBookModal", "NewPieceModal", "StartWritingModal"]
