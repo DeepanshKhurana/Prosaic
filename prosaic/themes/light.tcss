@@ -144,7 +144,7 @@ Input:focus {
 
 #dashboard {
     width: 60;
-    height: 24;
+    height: 26;
     padding: 1 2;
     background: $surface;
     border: round $border;
@@ -242,7 +242,7 @@ Input:focus {
 }
 
 #file-tree:focus-within {
-    border: solid $primary;
+    border: round $primary;
 }
 
 #file-tree DirectoryTree {
@@ -275,7 +275,7 @@ Input:focus {
 }
 
 #editor-container:focus-within {
-    border: solid $primary;
+    border: round $primary;
 }
 
 #editor {
@@ -342,7 +342,7 @@ TextArea > .text-area--cursor-gutter {
 }
 
 #outline:focus-within {
-    border: solid $primary;
+    border: round $primary;
 }
 
 #outline-list {
@@ -521,6 +521,12 @@ Button.-primary:hover {
     background: $surface;
     border: solid $border;
     padding: 0;
+}
+
+#find-legend {
+    text-align: center;
+    color: $text-dim;
+    margin-top: 1;
 }
 
 .focus-mode #file-tree {
