@@ -43,6 +43,7 @@ class EditorScreen(Screen):
         light_mode: bool = True,
         add_note: bool = False,
         reader_mode_initial: bool = False,
+        show_all_panes: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -51,6 +52,7 @@ class EditorScreen(Screen):
         self._light_mode = light_mode
         self._add_note = add_note
         self._reader_mode_initial = reader_mode_initial
+        self._show_all_panes = show_all_panes
         self._is_book = False
 
     def compose(self) -> ComposeResult:
@@ -79,8 +81,8 @@ class EditorScreen(Screen):
                 self._is_book = True
             except ValueError:
                 self._is_book = False
-            self.show_outline = self._is_book
-            self.query_one("#outline", OutlinePanel).display = self._is_book
+            self.show_outline = self._is_book or self._show_all_panes
+            self.query_one("#outline", OutlinePanel).display = self._is_book or self._show_all_panes
 
         if self._reader_mode_initial:
             self.reader_mode = True
@@ -156,7 +158,7 @@ class EditorScreen(Screen):
         else:
             self.remove_class("focus-mode")
             self.show_tree = True
-            self.show_outline = self._is_book
+            self.show_outline = self._is_book or self._show_all_panes
 
     def watch_reader_mode(self, reader: bool) -> None:
         editor = self.query_one("#editor", TextArea)
@@ -168,7 +170,7 @@ class EditorScreen(Screen):
         else:
             self.remove_class("reader-mode")
             self.show_tree = True
-            self.show_outline = self._is_book
+            self.show_outline = self._is_book or self._show_all_panes
             editor.read_only = False
 
     def watch_current_file(self, path: Path | None) -> None:

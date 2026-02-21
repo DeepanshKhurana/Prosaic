@@ -8,7 +8,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.screen import Screen
 from textual.widgets import Static
 
-from prosaic.app import FileFindModal, HelpScreen, NewBookModal, NewPieceModal
+from prosaic.app import FileFindModal, HelpScreen, NewBookModal, NewPieceModal, StartWritingModal
 from prosaic.config import get_last_file, set_last_file
 from prosaic.core.metrics import MetricsTracker
 from prosaic.screens.editor import EditorScreen
@@ -27,6 +27,7 @@ class DashboardScreen(Screen):
 
     BINDINGS = [
         Binding("c", "continue_writing", "continue writing", show=False),
+        Binding("s", "start_writing", "start writing"),
         Binding("p", "new_piece", "write a piece"),
         Binding("b", "new_book", "work on a book"),
         Binding("n", "add_note", "add a note"),
@@ -54,6 +55,9 @@ class DashboardScreen(Screen):
                             classes="menu-label",
                         )
                         yield Static("(c)", classes="menu-key")
+                    with Horizontal(classes="menu-item"):
+                        yield Static("start writing", classes="menu-label")
+                        yield Static("(s)", classes="menu-key")
                     with Horizontal(classes="menu-item"):
                         yield Static("write a piece", classes="menu-label")
                         yield Static("(p)", classes="menu-key")
@@ -113,6 +117,13 @@ class DashboardScreen(Screen):
     def action_continue_writing(self) -> None:
         if self.last_file and self.last_file.exists():
             self.app._open_editor(self.last_file)
+
+    def action_start_writing(self) -> None:
+        def handle_result(result: Path | None) -> None:
+            if result:
+                self.app._open_editor(result, show_all_panes=True)
+
+        self.app.push_screen(StartWritingModal(), callback=handle_result)
 
     def action_add_note(self) -> None:
         self.app.push_screen(
