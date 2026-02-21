@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-02-22
+
+### Added
+
+- **Start writing mode**: Quick writing session with all panes open (`s` keybinding). Creates documents in workspace root instead of subfolders.
+- **Find files type indicators**: File list shows type abbreviations (b/d/n/p) with legend below.
+
+### Fixed
+
+- Selection highlighting now clearly visible (improved contrast for both light and dark themes).
+- Markdown syntax highlighting for emphasis, bold, links, code spans, blockquotes, and list markers.
+- Find Files now searches entire workspace recursively (not just `pieces/`) and displays relative paths.
+- **Inline markdown formatting**: Bold (`**`/`__`), italic (`*`/`_`), and inline code are now properly styled with dimmed markers and formatted content.
+- Active pane borders remain curved (round) instead of changing to solid.
+
 ## [0.1.1] - 2026-02-21
 
 ### Added

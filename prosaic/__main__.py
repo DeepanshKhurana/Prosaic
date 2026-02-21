@@ -52,7 +52,7 @@ class ProsaicApp(App):
         else:
             self.push_screen("dashboard")
 
-    def _open_editor(self, file_path: Path | None = None) -> None:
+    def _open_editor(self, file_path: Path | None = None, show_all_panes: bool = False) -> None:
         if file_path:
             set_last_file(file_path)
 
@@ -61,6 +61,7 @@ class ProsaicApp(App):
                 self.metrics,
                 initial_file=file_path,
                 light_mode=self.light_mode,
+                show_all_panes=show_all_panes,
             )
         )
 

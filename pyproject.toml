@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prosaic"
-version = "0.1.1"
+version = "0.1.2"
 description = "A writer-first terminal writing app"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -24,7 +24,7 @@ classifiers = [
     "Topic :: Text Editors",
 ]
 dependencies = [
-    "textual>=0.50.0",
+    "textual[syntax]>=0.50.0",
     "click>=8.1.0",
     "platformdirs>=4.0.0",
     "gitpython>=3.1.0",
