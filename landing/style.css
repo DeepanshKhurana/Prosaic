@@ -122,6 +122,22 @@ h1 {
     color: var(--primary-color);
 }
 
+.anti-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    margin-bottom: 2rem;
+}
+
+.anti-feature {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+.anti-feature .symbol {
+    color: var(--comment-color);
+}
+
 .install-block {
     background: var(--terminal-header);
     padding: 1rem 1.5rem;
@@ -210,6 +226,11 @@ h1 {
     }
     
     .features {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .anti-features {
         flex-direction: column;
         gap: 0.5rem;
     }
