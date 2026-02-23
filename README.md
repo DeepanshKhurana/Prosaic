@@ -1,7 +1,6 @@
 # Prosaic
 
 [![Build](https://img.shields.io/github/actions/workflow/status/DeepanshKhurana/Prosaic/ci.yml?label=build)](https://github.com/DeepanshKhurana/Prosaic/actions/workflows/ci.yml)
-[![PyPI version](https://img.shields.io/pypi/v/prosaic-app)](https://pypi.org/project/prosaic-app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 A writer-first terminal writing app built with Python and Textual, built with the assistance of LLM/Copilot tools.
