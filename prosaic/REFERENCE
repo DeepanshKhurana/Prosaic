@@ -1,0 +1,40 @@
+PROSAIC REFERENCE
+
+A writer-first terminal writing app.
+
+
+CONFIGURATION
+-------------
+
+Config location (in order of priority):
+
+  1. PROSAIC_CONFIG_DIR env var
+  2. $XDG_CONFIG_HOME/prosaic/
+  3. ~/.config/prosaic/
+
+Override with environment variable:
+
+  PROSAIC_CONFIG_DIR=~/custom/path prosaic
+
+
+GIT INTEGRATION
+---------------
+
+If your archive directory contains a git repository:
+
+  - Existing .git directory is detected
+  - Repository is inherited (no re-init)
+  - Remote URL is read if configured
+  - Prompts for remote if none exists
+
+
+ARCHIVE STRUCTURE
+-----------------
+
+  ~/Prosaic/
+    pieces/         Dated markdown with frontmatter
+    books/          Long-form projects
+    *.md            Drafts (loose files in root)
+    notes.md        Quick notes with date headers
+    metrics.json    Daily writing statistics
+    .git/           Version control

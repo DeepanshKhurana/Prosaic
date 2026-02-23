@@ -21,6 +21,24 @@ from prosaic.widgets import SpellCheckTextArea
 from prosaic.wizard import needs_setup, run_setup, setup_workspace
 
 
+def _wrap_output(text: str) -> str:
+    """Wrap text with equals line separators."""
+    separator = "=" * 21
+    return f"\n{separator}\n\n{text}\n{separator}\n"
+
+
+def _get_reference_text() -> str:
+    """Read REFERENCE file from package."""
+    content = (Path(__file__).parent / "REFERENCE").read_text()
+    return _wrap_output(content)
+
+
+def _get_license_text() -> str:
+    """Read LICENSE file from package."""
+    content = (Path(__file__).parent / "LICENSE").read_text()
+    return _wrap_output(content)
+
+
 class ProsaicApp(App):
     """Main Prosaic application."""
 
@@ -45,11 +63,10 @@ class ProsaicApp(App):
         ensure_workspace()
         self.metrics = MetricsTracker(get_workspace_dir())
         self.install_screen(DashboardScreen(self.metrics), name="dashboard")
+        self.push_screen("dashboard")
 
         if self.initial_file:
             self._open_editor(self.initial_file)
-        else:
-            self.push_screen("dashboard")
 
     def _open_editor(self, file_path: Path | None = None, show_all_panes: bool = False) -> None:
         if file_path:
@@ -130,9 +147,19 @@ class ProsaicApp(App):
 @click.command()
 @click.option("--light/--dark", default=True, help="Use light or dark theme")
 @click.option("--setup", is_flag=True, help="Run setup wizard again")
+@click.option("--reference", is_flag=True, help="Show reference")
+@click.option("--license", "show_license", is_flag=True, help="Show MIT license")
 @click.argument("file", required=False, type=click.Path())
-def main(light: bool, setup: bool, file: str | None) -> None:
+def main(light: bool, setup: bool, reference: bool, show_license: bool, file: str | None) -> None:
     """Prosaic - A writer-first terminal writing app."""
+    if reference:
+        click.echo(_get_reference_text())
+        return
+
+    if show_license:
+        click.echo(_get_license_text())
+        return
+
     if setup or needs_setup():
         config = run_setup()
         save_config(config)

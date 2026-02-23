@@ -178,8 +178,7 @@ class _FileItem(ListItem):
 
     def __init__(self, path: Path, workspace: Path) -> None:
         filename = path.stem
-        
-        # Check if it's the notes file
+
         if path.name == "notes.md":
             file_type = "n"
         else:
@@ -198,7 +197,7 @@ class _FileItem(ListItem):
                     file_type = "d"
             except ValueError:
                 file_type = ""
-        
+
         if file_type:
             display = f"{filename} • {file_type}"
         else:
