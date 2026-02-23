@@ -42,6 +42,28 @@ prosaic
 prosaic --setup
 ```
 
+## Usage
+
+```bash
+prosaic [OPTIONS] [FILE]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--light` | Use light theme (default) |
+| `--dark` | Use dark theme |
+| `--setup` | Run setup wizard again |
+| `--reference` | Show reference |
+| `--license` | Show MIT license |
+| `--help` | Show help message |
+
+Open a file directly:
+
+```bash
+prosaic ~/writing/draft.md
+prosaic --dark ~/writing/draft.md
+```
+
 ## Features
 
 - **Markdown-first**: Live outline, word counting
@@ -133,6 +155,7 @@ Example `settings.json`:
 ~/Prosaic/              # Default archive (configurable)
   pieces/               # Pieces with preloaded markdown frontmatter
   books/                # Long-form projects with Outline already open
+  *.md                  # Drafts (loose files in root)
   notes.md              # Quick notes with auto date headers
   metrics.json          # Daily statistics for archival and display
   .git/                 # Version control
