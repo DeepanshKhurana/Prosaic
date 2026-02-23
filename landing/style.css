@@ -1,0 +1,221 @@
+:root {
+    --bg-color: #fffffc;
+    --terminal-bg: #f8f8f5;
+    --terminal-header: #f0f0eb;
+    --text-color: #5a3d35;
+    --text-dim: #a89080;
+    --primary-color: #703327;
+    --secondary-color: #715e12;
+    --accent-color: #ffffed;
+    --prompt-color: #703327;
+    --comment-color: #8a6d60;
+    --border-color: #c8c8c4;
+    --red: #c24038;
+    --yellow: #715e12;
+    --green: #4a7a4a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+::selection {
+    background: var(--primary-color);
+    color: var(--bg-color);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 700px;
+    width: 100%;
+}
+
+.terminal-window {
+    background: var(--terminal-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(112, 51, 39, 0.15);
+    border: 1px solid var(--border-color);
+}
+
+.terminal-header {
+    background: var(--terminal-header);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.terminal-dot.red { background: var(--red); }
+.terminal-dot.yellow { background: var(--yellow); }
+.terminal-dot.green { background: var(--green); }
+
+.terminal-title {
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 36px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+.terminal-body {
+    padding: 2rem;
+}
+
+h1 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.prompt {
+    color: var(--prompt-color);
+    margin-right: 0.5rem;
+}
+
+.tagline {
+    font-size: 1.1rem;
+    color: var(--comment-color);
+    margin-bottom: 1.5rem;
+}
+
+.description {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+}
+
+.features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    margin-bottom: 2rem;
+}
+
+.feature {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+.feature .symbol {
+    color: var(--primary-color);
+}
+
+.install-block {
+    background: var(--terminal-header);
+    padding: 1rem 1.5rem;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.install-block code {
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.text-link {
+    text-decoration: none;
+    color: var(--prompt-color);
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.text-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.text-link.secondary {
+    color: var(--secondary-color);
+}
+
+.text-link.secondary:hover {
+    color: var(--primary-color);
+}
+
+.sister-project {
+    margin-top: 1.5rem;
+    margin-bottom: 0;
+}
+
+.comment {
+    color: var(--comment-color);
+    font-size: 0.9rem;
+}
+
+.comment .text-link {
+    font-size: inherit;
+}
+
+.footer {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    text-align: center;
+}
+
+.footer a {
+    color: var(--text-dim);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: var(--text-color);
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .terminal-body {
+        padding: 1.5rem;
+    }
+    
+    .features {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
