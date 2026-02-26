@@ -79,10 +79,44 @@ _INLINE_CODE = re.compile(r"(`)([^`]+)(`)")
 
 
 
-class SpellCheckTextArea(TextArea):
+class SpellCheckTextArea(TextArea, inherit_bindings=False):
     """TextArea with live spell-check underlines and markdown highlighting."""
 
-    BINDINGS = [Binding("ctrl+a", "select_all", "select all", show=False)]
+    BINDINGS = [
+        Binding("ctrl+a", "select_all", "select all"),
+        Binding("ctrl+k", "toggle_comment", "comment", priority=True),
+        Binding("up", "cursor_up", "cursor up", show=False),
+        Binding("down", "cursor_down", "cursor down", show=False),
+        Binding("left", "cursor_left", "cursor left", show=False),
+        Binding("right", "cursor_right", "cursor right", show=False),
+        Binding("ctrl+left", "cursor_word_left", "cursor word left", show=False),
+        Binding("ctrl+right", "cursor_word_right", "cursor word right", show=False),
+        Binding("home,ctrl+a", "cursor_line_start", "cursor line start", show=False),
+        Binding("end,ctrl+e", "cursor_line_end", "cursor line end", show=False),
+        Binding("pageup", "cursor_page_up", "cursor page up", show=False),
+        Binding("pagedown", "cursor_page_down", "cursor page down", show=False),
+        Binding("ctrl+shift+left", "cursor_word_left(True)", "cursor left word select", show=False),
+        Binding("ctrl+shift+right", "cursor_word_right(True)", "cursor right word select", show=False),
+        Binding("shift+home", "cursor_line_start(True)", "cursor line start select", show=False),
+        Binding("shift+end", "cursor_line_end(True)", "cursor line end select", show=False),
+        Binding("shift+up", "cursor_up(True)", "cursor up select", show=False),
+        Binding("shift+down", "cursor_down(True)", "cursor down select", show=False),
+        Binding("shift+left", "cursor_left(True)", "cursor left select", show=False),
+        Binding("shift+right", "cursor_right(True)", "cursor right select", show=False),
+        Binding("f6", "select_line", "select line", show=False),
+        Binding("f7", "select_all", "select all", show=False),
+        Binding("backspace", "delete_left", "delete character left", show=False),
+        Binding("ctrl+w", "delete_word_left", "delete left to start of word", show=False),
+        Binding("delete,ctrl+d", "delete_right", "delete character right", show=False),
+        Binding("ctrl+f", "delete_word_right", "delete right to start of word", show=False),
+        Binding("ctrl+x", "cut", "cut", show=False),
+        Binding("ctrl+c,super+c", "copy", "copy", show=False),
+        Binding("ctrl+v", "paste", "paste", show=False),
+        Binding("ctrl+u", "delete_to_start_of_line", "delete to line start", show=False),
+        Binding("ctrl+shift+k", "delete_line", "delete line", show=False),
+        Binding("ctrl+z", "undo", "undo", show=False),
+        Binding("ctrl+y", "redo", "redo", show=False),
+    ]
 
     def __init__(self, *args, **kwargs) -> None:
         self._spell: SpellChecker = SpellChecker()
@@ -202,3 +236,23 @@ class SpellCheckTextArea(TextArea):
                 self._highlights[row] = []
             for col_s, col_e, style in highlights:
                 self._highlights[row].append((col_s, col_e, style))
+
+    def action_toggle_comment(self) -> None:
+        """Toggle markdown comment on current line."""
+        row, _ = self.cursor_location
+        line = self.document.get_line(row)
+        line_len = len(line)
+        stripped = line.strip()
+
+        start = (row, 0)
+        end = (row, line_len)
+
+        if stripped.startswith("[") and stripped.endswith("]: #"):
+            new_text = stripped[1:-4]
+            new_col = len(new_text)
+        else:
+            new_text = f"[{line}]: #"
+            new_col = len(new_text)
+
+        self.replace(new_text, start, end)
+        self.move_cursor((row, new_col))
