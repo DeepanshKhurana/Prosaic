@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-26
+
+### Added
+
+- `ctrl+k` to toggle markdown comments using `[text]: #` syntax.
+- `ctrl+p` opens key palette showing all keybindings.
+- `f1` shows help screen on all screens.
+
+### Changed
+
+- All keybinding descriptions are now lowercase for consistency.
+
+### Fixed
+
+- Escape and `ctrl+q` now consistently close layers in sequence (modals, key palette, screens).
+- Modals can now be closed with escape or `ctrl+q`.
+
+### Refactored
+
+- DRY modals with `CreateFileModal` base class.
+- Dashboard action handlers use `_make_open_callback` helper.
+
 ## [1.0.3] - 2026-02-23
 
 ### Added
