@@ -22,10 +22,13 @@ QUOTE = (
 QUOTE_ATTR = "fernando pessoa, the book of disquiet"
 
 
-class DashboardScreen(Screen):
+class DashboardScreen(Screen, inherit_bindings=False):
     """Home screen with menu and daily stats."""
 
     BINDINGS = [
+        Binding("tab", "app.focus_next", "focus next", show=False),
+        Binding("shift+tab", "app.focus_previous", "focus previous", show=False),
+        Binding("ctrl+c,super+c", "screen.copy_text", "copy", show=False),
         Binding("c", "continue_writing", "continue writing", show=False),
         Binding("s", "start_writing", "start writing"),
         Binding("p", "new_piece", "write a piece"),
@@ -34,7 +37,7 @@ class DashboardScreen(Screen):
         Binding("r", "read_notes", "read notes"),
         Binding("f", "find_piece", "find files"),
         Binding("q", "quit", "quit"),
-        Binding("?", "show_help", "help"),
+        Binding("f1", "show_help", "help"),
         Binding("escape", "quit", "quit", show=False),
     ]
 
@@ -83,7 +86,7 @@ class DashboardScreen(Screen):
                 yield Static("", id="dashboard-separator")
                 yield Static(QUOTE, id="dashboard-quote")
                 yield Static(QUOTE_ATTR, id="dashboard-quote-attr")
-                yield Static("help (?)   quit (q)", id="dashboard-footer")
+                yield Static("help (f1)   quit (q)", id="dashboard-footer")
 
     def on_mount(self) -> None:
         """Hide continue item if no last file."""
@@ -100,30 +103,25 @@ class DashboardScreen(Screen):
         continue_item = self.query_one("#continue-item")
         continue_item.display = self.last_file is not None
 
-    def action_new_piece(self) -> None:
-        def handle_result(result: Path | None) -> None:
+    def _make_open_callback(self, show_all_panes: bool = False):
+        """Create a callback that opens the editor with the result."""
+        def callback(result: Path | None) -> None:
             if result:
-                self.app._open_editor(result)
+                self.app._open_editor(result, show_all_panes=show_all_panes)
+        return callback
 
-        self.app.push_screen(NewPieceModal(), callback=handle_result)
+    def action_new_piece(self) -> None:
+        self.app.push_screen(NewPieceModal(), callback=self._make_open_callback())
 
     def action_new_book(self) -> None:
-        def handle_result(result: Path | None) -> None:
-            if result:
-                self.app._open_editor(result)
-
-        self.app.push_screen(NewBookModal(), callback=handle_result)
+        self.app.push_screen(NewBookModal(), callback=self._make_open_callback())
 
     def action_continue_writing(self) -> None:
         if self.last_file and self.last_file.exists():
             self.app._open_editor(self.last_file)
 
     def action_start_writing(self) -> None:
-        def handle_result(result: Path | None) -> None:
-            if result:
-                self.app._open_editor(result, show_all_panes=True)
-
-        self.app.push_screen(StartWritingModal(), callback=handle_result)
+        self.app.push_screen(StartWritingModal(), callback=self._make_open_callback(show_all_panes=True))
 
     def action_add_note(self) -> None:
         self.app.push_screen(

@@ -21,14 +21,17 @@ dashboard
   n         add a note
   r         read notes
   f         find files
-  ?         help
+  f1        help
   q         quit
+  ctrl+p    keys
 
 editor
   ctrl+e    toggle file tree
   ctrl+o    toggle outline
   ctrl+s    save
   ctrl+q    go home
+  ctrl+p    keys
+  f1        help
   f5        focus mode
   f6        reader mode
 
@@ -39,6 +42,7 @@ editing
   ctrl+c    copy
   ctrl+v    paste
   ctrl+a    select all
+  ctrl+k    toggle comment
 
 git status
   *         modified
@@ -49,63 +53,21 @@ press escape or q to close
 """
 
 
-class NewPieceModal(ModalScreen[Path | None]):
-    """Modal for creating a new piece."""
+class CreateFileModal(ModalScreen[Path | None]):
+    """Base modal for creating files."""
 
     BINDINGS = [Binding("escape", "cancel", "cancel")]
 
-    def compose(self) -> ComposeResult:
-        with Vertical(id="dialog"):
-            yield Static("write a piece", id="dialog-title")
-            yield Static("enter a title (or leave blank for timestamp):")
-            yield Input(placeholder="my-new-piece", id="title-input")
-
-    def on_mount(self) -> None:
-        self.query_one("#title-input", Input).focus()
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        self._create_piece()
-
-    def _create_piece(self) -> None:
-        title = self.query_one("#title-input", Input).value.strip()
-
-        if title:
-            slug = title.lower().replace(" ", "-")
-            slug = "".join(c for c in slug if c.isalnum() or c == "-")
-            filename = f"{slug}.md"
-        else:
-            filename = datetime.now().strftime("%Y%m%d%H%M%S") + ".md"
-
-        pieces_dir = get_pieces_dir()
-        pieces_dir.mkdir(parents=True, exist_ok=True)
-        file_path = pieces_dir / filename
-
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        slug_str = filename[:-3]
-        frontmatter = f'''---
-title: "{title}"
-date: {date_str}
-slug: {slug_str}
----
-
-'''
-        file_path.write_text(frontmatter)
-        self.dismiss(file_path)
-
-    def action_cancel(self) -> None:
-        self.dismiss(None)
-
-
-class StartWritingModal(ModalScreen[Path | None]):
-    """Modal for starting a writing session."""
-
-    BINDINGS = [Binding("escape", "cancel", "cancel")]
+    # Subclasses override these
+    TITLE: str = ""
+    PROMPT: str = "enter a title (or leave blank for timestamp):"
+    PLACEHOLDER: str = "my-file"
 
     def compose(self) -> ComposeResult:
         with Vertical(id="dialog"):
-            yield Static("start writing", id="dialog-title")
-            yield Static("enter a filename (or leave blank for timestamp):")
-            yield Input(placeholder="my-document", id="title-input")
+            yield Static(self.TITLE, id="dialog-title")
+            yield Static(self.PROMPT)
+            yield Input(placeholder=self.PLACEHOLDER, id="title-input")
 
     def on_mount(self) -> None:
         self.query_one("#title-input", Input).focus()
@@ -113,64 +75,77 @@ class StartWritingModal(ModalScreen[Path | None]):
     def on_input_submitted(self, event: Input.Submitted) -> None:
         self._create_file()
 
+    def _slugify(self, title: str) -> str:
+        """Convert title to filename slug."""
+        slug = title.lower().replace(" ", "-")
+        return "".join(c for c in slug if c.isalnum() or c == "-")
+
+    def _get_filename(self, title: str) -> str:
+        """Generate filename from title or timestamp."""
+        if title:
+            return f"{self._slugify(title)}.md"
+        return datetime.now().strftime("%Y%m%d%H%M%S") + ".md"
+
+    def _get_target_dir(self) -> Path:
+        """Return directory to create file in. Override in subclass."""
+        return get_workspace_dir()
+
+    def _get_initial_content(self, title: str) -> str:
+        """Return initial file content. Override in subclass."""
+        return ""
+
     def _create_file(self) -> None:
         title = self.query_one("#title-input", Input).value.strip()
-
-        if title:
-            slug = title.lower().replace(" ", "-")
-            slug = "".join(c for c in slug if c.isalnum() or c == "-")
-            filename = f"{slug}.md"
-        else:
-            filename = datetime.now().strftime("%Y%m%d%H%M%S") + ".md"
-
-        workspace_dir = get_workspace_dir()
-        workspace_dir.mkdir(parents=True, exist_ok=True)
-        file_path = workspace_dir / filename
-
-        file_path.write_text("")
+        target_dir = self._get_target_dir()
+        target_dir.mkdir(parents=True, exist_ok=True)
+        file_path = target_dir / self._get_filename(title)
+        file_path.write_text(self._get_initial_content(title))
         self.dismiss(file_path)
 
     def action_cancel(self) -> None:
         self.dismiss(None)
 
 
-class NewBookModal(ModalScreen[Path | None]):
+class NewPieceModal(CreateFileModal):
+    """Modal for creating a new piece."""
+
+    TITLE = "write a piece"
+    PLACEHOLDER = "my-new-piece"
+
+    def _get_target_dir(self) -> Path:
+        return get_pieces_dir()
+
+    def _get_initial_content(self, title: str) -> str:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        slug_str = self._slugify(title) if title else datetime.now().strftime("%Y%m%d%H%M%S")
+        return f'''---
+title: "{title}"
+date: {date_str}
+slug: {slug_str}
+---
+
+'''
+
+
+class StartWritingModal(CreateFileModal):
+    """Modal for starting a writing session."""
+
+    TITLE = "start writing"
+    PROMPT = "enter a filename (or leave blank for timestamp):"
+    PLACEHOLDER = "my-document"
+
+
+class NewBookModal(CreateFileModal):
     """Modal for creating a new book."""
 
-    BINDINGS = [Binding("escape", "cancel", "cancel")]
+    TITLE = "work on a book"
+    PLACEHOLDER = "my-new-book"
 
-    def compose(self) -> ComposeResult:
-        with Vertical(id="dialog"):
-            yield Static("work on a book", id="dialog-title")
-            yield Static("enter a title (or leave blank for timestamp):")
-            yield Input(placeholder="my-new-book", id="title-input")
+    def _get_target_dir(self) -> Path:
+        return get_books_dir()
 
-    def on_mount(self) -> None:
-        self.query_one("#title-input", Input).focus()
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        self._create_book()
-
-    def _create_book(self) -> None:
-        title = self.query_one("#title-input", Input).value.strip()
-
-        if title:
-            slug = title.lower().replace(" ", "-")
-            slug = "".join(c for c in slug if c.isalnum() or c == "-")
-            filename = f"{slug}.md"
-        else:
-            filename = datetime.now().strftime("%Y%m%d%H%M%S") + ".md"
-
-        books_dir = get_books_dir()
-        books_dir.mkdir(parents=True, exist_ok=True)
-        file_path = books_dir / filename
-
-        content = f"# {title}\n\n" if title else ""
-        file_path.write_text(content)
-        self.dismiss(file_path)
-
-    def action_cancel(self) -> None:
-        self.dismiss(None)
+    def _get_initial_content(self, title: str) -> str:
+        return f"# {title}\n\n" if title else ""
 
 
 class _FileItem(ListItem):
