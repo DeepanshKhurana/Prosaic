@@ -95,6 +95,29 @@ h1 {
     margin-right: 0.5rem;
 }
 
+.header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.header-row h1 {
+    margin-bottom: 0;
+}
+
+.ph-badge {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.ph-badge img {
+    height: 40px;
+    width: auto;
+    filter: hue-rotate(90deg);
+}
+
 .tagline {
     font-size: 1.1rem;
     color: var(--comment-color);
@@ -217,9 +240,21 @@ h1 {
     color: var(--text-color);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
+
     h1 {
-        font-size: 1.5rem;
+        font-size: 1.5rem !important;
+    }
+
+    .ph-badge img {
+      height: 2rem;
+      margin-top: 0.1rem;
+    }
+
+    .header-row {
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: flex-start;
     }
     
     .terminal-body {
@@ -299,7 +334,7 @@ h1 {
     color: var(--text-color);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
     .docs-row {
         flex-direction: column;
         gap: 0.25rem;
