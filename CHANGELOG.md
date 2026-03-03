@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-03
+
+### Added
+
+- **Profiles**: Maintain separate workspaces for different writing projects (personal, work, fiction, etc.).
+- `--profile <name>` flag to use or create a specific profile.
+- `--profiles` flag to list all configured profiles.
+- Profile management screen accessible from dashboard (`m` key).
+- Per-profile theme preference (light/dark).
+- Set default profile option in edit modal (`ctrl+d`).
+- Automatic migration from legacy config to v2 profiles format with backup.
+
+### Changed
+
+- Escape key now works consistently on all screens.
+- Modal backgrounds now match the app background (no overlay).
+
 ## [1.1.1] - 2026-02-26
 
 - Prosaic has now moved from [DeepanshKhurana/Prosaic](https://github.com/DeepanshKhurana/Prosaic) to [DimwitLabs/Prosaic](https://github.com/DimwitLabs/Prosaic)
