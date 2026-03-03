@@ -9,9 +9,10 @@ from textual.screen import Screen
 from textual.widgets import Static
 
 from prosaic.app import FileFindModal, HelpScreen, NewBookModal, NewPieceModal, StartWritingModal
-from prosaic.config import get_last_file, set_last_file
+from prosaic.config import get_active_profile, get_last_file, set_last_file
 from prosaic.core.metrics import MetricsTracker
 from prosaic.screens.editor import EditorScreen
+from prosaic.screens.profiles import ProfilesScreen
 
 QUOTE = (
     "in these random impressions, and with no desire to be other than random, "
@@ -36,6 +37,7 @@ class DashboardScreen(Screen, inherit_bindings=False):
         Binding("n", "add_note", "add a note"),
         Binding("r", "read_notes", "read notes"),
         Binding("f", "find_piece", "find files"),
+        Binding("m", "manage_profiles", "manage profile"),
         Binding("q", "quit", "quit"),
         Binding("f1", "show_help", "help"),
     ]
@@ -75,6 +77,9 @@ class DashboardScreen(Screen, inherit_bindings=False):
                     with Horizontal(classes="menu-item"):
                         yield Static("find files", classes="menu-label")
                         yield Static("(f)", classes="menu-key")
+                    with Horizontal(classes="menu-item"):
+                        yield Static(f"manage profile ({get_active_profile()})", classes="menu-label", id="profile-menu-item")
+                        yield Static("(m)", classes="menu-key")
 
                 stats = self.metrics.get_today_stats()
                 yield Static(
@@ -101,6 +106,9 @@ class DashboardScreen(Screen, inherit_bindings=False):
         self.last_file = get_last_file()
         continue_item = self.query_one("#continue-item")
         continue_item.display = self.last_file is not None
+
+        profile_item = self.query_one("#profile-menu-item", Static)
+        profile_item.update(f"manage profile ({get_active_profile()})")
 
     def _make_open_callback(self, show_all_panes: bool = False):
         """Create a callback that opens the editor with the result."""
@@ -155,6 +163,9 @@ class DashboardScreen(Screen, inherit_bindings=False):
                     light_mode=self.app.light_mode,
                 )
             )
+
+    def action_manage_profiles(self) -> None:
+        self.app.push_screen(ProfilesScreen())
 
     def action_show_help(self) -> None:
         self.app.push_screen(HelpScreen())
