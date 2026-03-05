@@ -50,3 +50,17 @@ Maintain separate workspaces for different projects.
 
 Each profile has its own archive, git remote, and theme.
 Manage from dashboard (m key) or edit settings.json.
+
+
+PANE DEFAULTS
+-------------
+
+  Mode               Tree    Outline
+  ----               ----    -------
+  write a piece      shown   hidden
+  start writing      shown   shown
+  add a note         hidden  shown
+  read notes         hidden  shown
+  work on a book     hidden  shown
+  focus mode         hidden  hidden
+  reader mode        hidden  hidden
