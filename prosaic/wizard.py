@@ -41,6 +41,7 @@ def _prompt_git_remote() -> str:
     """Prompt for optional git remote URL."""
     click.echo()
     click.echo("enter a git remote url to sync your writing (optional)")
+    click.echo("e.g. https://github.com/username/my-writing.git")
     click.echo("(press enter to skip)")
     return click.prompt("git remote", default="", show_default=False)
 
@@ -105,6 +106,10 @@ def _setup_single_profile(name: str) -> dict:
         )
 
         if init_git:
+            click.echo()
+            click.echo("prosaic will initialize a git repository in your archive.")
+            click.echo("you'll need to commit and push changes yourself.")
+            click.echo("cheatsheet: https://git-scm.com/cheat-sheet")
             git_remote = _prompt_git_remote()
 
     click.echo()
