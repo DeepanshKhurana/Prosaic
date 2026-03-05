@@ -585,20 +585,8 @@ HelpPanel {
     padding: 2 12;
 }
 
-.reader-mode #file-tree {
-    display: none;
-}
-
-.reader-mode #outline {
-    display: none;
-}
-
-.reader-mode #statusbar {
-    display: none;
-}
-
 .reader-mode #editor {
-    padding: 2 20;
+    padding: 0;
 }
 
 /* Profiles Screen */
