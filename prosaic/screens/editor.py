@@ -71,7 +71,9 @@ class EditorScreen(Screen, inherit_bindings=False):
                     soft_wrap=True,
                     theme=ta_theme,
                 )
-            yield OutlinePanel(id="outline")
+            outline = OutlinePanel(id="outline")
+            outline.display = False
+            yield outline
         yield StatusBar(id="statusbar")
 
     def on_mount(self) -> None:
@@ -87,15 +89,18 @@ class EditorScreen(Screen, inherit_bindings=False):
                 self._is_book = True
             except ValueError:
                 self._is_book = False
-            self.show_outline = self._is_book or self._show_all_panes
-            self.query_one("#outline", OutlinePanel).display = self._is_book or self._show_all_panes
-
-        if self._add_note:
-            self.show_tree = False
-            self.show_outline = True
 
         if self._reader_mode_initial:
             self.reader_mode = True
+        elif self._add_note or self._is_book:
+            self.show_tree = False
+            self.show_outline = True
+        elif self._show_all_panes:
+            self.show_tree = True
+            self.show_outline = True
+        else:
+            self.show_tree = True
+            self.show_outline = False
 
     def _load_file(self, path: Path) -> None:
         if not path.exists():
@@ -187,21 +192,37 @@ class EditorScreen(Screen, inherit_bindings=False):
             self.show_outline = False
         else:
             self.remove_class("focus-mode")
-            self.show_tree = True
-            self.show_outline = self._is_book or self._show_all_panes
+            if not self.reader_mode:
+                self._restore_panes()
 
     def watch_reader_mode(self, reader: bool) -> None:
         editor = self.query_one("#editor", TextArea)
         if reader:
             self.add_class("reader-mode")
-            self.show_tree = False
-            self.show_outline = True
+            if self._reader_mode_initial:
+                self.show_tree = False
+                self.show_outline = True
+            else:
+                self.show_tree = False
+                self.show_outline = False
             editor.read_only = True
         else:
             self.remove_class("reader-mode")
-            self.show_tree = True
-            self.show_outline = self._is_book or self._show_all_panes
+            if not self.focus_mode:
+                self._restore_panes()
             editor.read_only = False
+
+    def _restore_panes(self) -> None:
+        """Restore pane visibility based on context."""
+        if self._add_note or self._is_book or self._reader_mode_initial:
+            self.show_tree = False
+            self.show_outline = True
+        elif self._show_all_panes:
+            self.show_tree = True
+            self.show_outline = True
+        else:
+            self.show_tree = True
+            self.show_outline = False
 
     def watch_current_file(self, path: Path | None) -> None:
         try:
@@ -244,14 +265,22 @@ class EditorScreen(Screen, inherit_bindings=False):
         self.show_outline = not self.show_outline
 
     def action_toggle_focus(self) -> None:
-        self.reader_mode = False
-        self.focus_mode = not self.focus_mode
-        self.notify("Focus mode on" if self.focus_mode else "Focus mode off")
+        if self.focus_mode:
+            self.focus_mode = False
+            self.notify("Focus mode off")
+        else:
+            self.focus_mode = True
+            self.reader_mode = False
+            self.notify("Focus mode on")
 
     def action_toggle_reader(self) -> None:
-        self.focus_mode = False
-        self.reader_mode = not self.reader_mode
-        self.notify("Reader mode on" if self.reader_mode else "Reader mode off")
+        if self.reader_mode:
+            self.reader_mode = False
+            self.notify("Reader mode off")
+        else:
+            self.reader_mode = True
+            self.focus_mode = False
+            self.notify("Reader mode on")
 
     def action_save(self) -> None:
         self._save_file()

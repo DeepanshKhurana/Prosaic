@@ -586,7 +586,7 @@ HelpPanel {
 }
 
 .reader-mode #editor {
-    padding: 0;
+    padding: 2 12;
 }
 
 /* Profiles Screen */
