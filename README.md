@@ -134,6 +134,18 @@ Manage profiles from the dashboard menu (`m` key) or edit in `~/.config/prosaic/
 | Writing | `Ctrl+a` | Select all |
 | Writing | `Ctrl+k` | Toggle markdown comment |
 
+## Pane Defaults
+
+| Mode | Tree | Outline |
+|------|------|---------|  
+| write a piece (default) | shown | hidden |
+| start writing | shown | shown |
+| add a note | hidden | shown |
+| read notes | hidden | shown |
+| work on a book | hidden | shown |
+| focus mode | hidden | hidden |
+| reader mode | hidden | hidden |
+
 ## Themes
 
 - **Prosaic Light** (default): Warm white background with brick accents
