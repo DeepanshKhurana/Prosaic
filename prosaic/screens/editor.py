@@ -1,5 +1,6 @@
 """Editor screen."""
 
+import asyncio
 from datetime import datetime
 from pathlib import Path
 
@@ -76,6 +77,7 @@ class EditorScreen(Screen, inherit_bindings=False):
     def on_mount(self) -> None:
         editor = self.query_one("#editor", TextArea)
         editor.focus()
+        self.set_interval(10, self._autosave)
 
         if self._initial_file and self._initial_file.exists():
             self._load_file(self._initial_file)
@@ -87,6 +89,10 @@ class EditorScreen(Screen, inherit_bindings=False):
                 self._is_book = False
             self.show_outline = self._is_book or self._show_all_panes
             self.query_one("#outline", OutlinePanel).display = self._is_book or self._show_all_panes
+
+        if self._add_note:
+            self.show_tree = False
+            self.show_outline = True
 
         if self._reader_mode_initial:
             self.reader_mode = True
@@ -138,6 +144,26 @@ class EditorScreen(Screen, inherit_bindings=False):
         if not silent:
             self.notify(f"Saved {self.current_file.name}")
 
+    async def _autosave(self) -> None:
+        """Autosave current file in background."""
+        if self.current_file is None or not self.modified:
+            return
+
+        try:
+            editor = self.query_one("#editor", TextArea)
+            content = editor.text
+            file_path = self.current_file
+
+            await asyncio.to_thread(write_text, file_path, content)
+
+            self.modified = False
+            self.metrics.record_save(count_words(content), file_path)
+
+            statusbar = self.query_one("#statusbar", StatusBar)
+            statusbar.flash_autosave()
+        except Exception:
+            pass
+
     def _update_stats(self, content: str) -> None:
         words = count_words(content)
         chars = count_characters(content)
@@ -169,7 +195,7 @@ class EditorScreen(Screen, inherit_bindings=False):
         if reader:
             self.add_class("reader-mode")
             self.show_tree = False
-            self.show_outline = False
+            self.show_outline = True
             editor.read_only = True
         else:
             self.remove_class("reader-mode")

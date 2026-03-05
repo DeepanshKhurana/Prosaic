@@ -66,6 +66,7 @@ class StatusBar(Horizontal):
         yield Static("untitled", id="filename")
         yield Static("", id="modified")
         yield Static("", id="git")
+        yield Static("", id="autosave")
         yield Static("", classes="spacer")
         yield Static("0 words", id="word-count")
         yield Static("·", classes="sep")
@@ -120,3 +121,12 @@ class StatusBar(Horizontal):
 
     def update_git_for_file(self, file_path: Path | None) -> None:
         self.git_status = get_git_status(file_path)
+
+    def flash_autosave(self) -> None:
+        """Briefly show autosave indicator."""
+        try:
+            indicator = self.query_one("#autosave", Static)
+            indicator.update(" ●")
+            self.set_timer(1.5, lambda: indicator.update(""))
+        except Exception:
+            pass
